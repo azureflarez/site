@@ -1,0 +1,757 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="preload" href="/style.css" as="style">
+    <link rel="preload" href="/main.js" as="script">
+    <title>Proxy Protocols</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta property="og:site_name" content="pavluk.org Blog"/>
+    <meta property="og:url" content="https://pavluk.org/blog/2023-07-08_proxies.html" />
+<meta property="og:title" content="Proxy Protocols" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:type" content="article" />
+<meta property="article:author" content="chayleaf" />
+<meta property="article:section" content="Technology" />
+<meta property="og:description" content="A dive into the most common proxy protocols - SOCKS4/5 and HTTP, with all their peculiarities." />
+<meta property="article:tag" content="proxy,socks5,socks4,http proxy,socks proxy,http,socks,proxy,protocol,rfc1928" />
+<meta property="keywords" content="proxy,socks5,socks4,http proxy,socks proxy,http,socks,proxy,protocol,rfc1928" />
+<meta property="article:published_time" content="2023-07-08T13:21:16+00:00" />
+<meta property="article:modified_time" content="2025-06-01T20:29:31+00:00" />
+
+    <link rel="icon" type="image/jpeg" href="/pfp.jpg">
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="https://pavluk.org/blog/feed.xml">
+    <link href="/style.css" rel="stylesheet" />
+    <script src="/main.js"></script>
+  </head>
+  <body onload="documentLoaded()">
+    <div class="main-menu"><ul><li><a href="/">Title Page</a></li><li>Blog</li><li><a href="/about.html">About Me</a></li><li><a href="/links.html">Random Links</a></li></ul><hr/></div>
+    <div class="main-body">
+    <a href="/blog/">&lt; Index</a><br/><h1>Proxy Protocols</h1>
+<p>The world of proxies is a weird one... I've spent a lot of time working
+on various proxies. There are quirks in each different protocol, some
+more, some less bewildering, so in this article I'll explain the HTTP
+and SOCKS proxy protocols from my experience (which is lacking, but I've
+still implemented a much bigger subset of those protocols than most
+proxy servers implement).</p>
+
+<div class="toc"><ol>
+<li><a href="#socks">SOCKS</a>
+<li><a href="#http">HTTP</a>
+</ol></div>
+<h2 id="socks">SOCKS</h2>
+
+<p>SOCKS is a special protocol for proxies. It's rather nice to implement
+because of how simple it is. But even then you quickly face a "quirk" -
+it actually allows you to <em>listen</em> for TCP traffic! Most SOCKS
+implementations don't offer this feature, but it's an interesting one
+indeed.</p>
+
+<h3 id="socks4">SOCKS4</h3>
+
+<p>The first version of the protocol... no, the first version still
+relevant today is SOCKS4. It's very simple and only supports IPv4 - you
+simply send the byte "4" for protocol version, the command (whether to
+open a TCP connection, or establish a TCP port binding, that is, listen
+for TCP connections from the server), the server port (obviously in
+network endian - that is, big endian), and the server IP. I'm not sure
+how you're supposed to set the server port in "listen" requests - that
+isn't specified in the standard, so I guess you should zero it out.
+After that, the "user ID" follows, which is simply a null-terminated
+string specifying the... "user ID". Additionally, there's identd - a
+program that could run on your computer, accessible on port 113, which
+could identify the username associated with your open SOCKS4 connection
+- this could additionally be used by the SOCKS4 server. Well, this may
+still be useful for corporate networks, but definitely not for use over
+the internet. The SOCKS4 protocol is definitely showing its age.</p>
+
+<table>
+<thead>
+<tr>
+  <th></th>
+  <th>VN</th>
+  <th>CD</th>
+  <th>DSTPORT</th>
+  <th>DSTIP</th>
+  <th>USERID</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>BYTES</strong></td>
+  <td>1</td>
+  <td>1</td>
+  <td>2</td>
+  <td>4</td>
+  <td>N</td>
+</tr>
+<tr>
+  <td><strong>VALUE</strong></td>
+  <td>4</td>
+  <td>1=connect, 2=bind</td>
+  <td>Desti&shy;nation port</td>
+  <td>Desti&shy;nation IPv4</td>
+  <td>Null-terminated ID</td>
+</tr>
+</tbody>
+</table>
+
+<p>Then, the server replies with a success (or error), and in case of a
+listen request it also tells the client the address it's listening on.
+In case of a connection, the IP/port fields are present as well, but
+must be ignored by the client.</p>
+
+<table>
+<thead>
+<tr>
+  <th></th>
+  <th>VN</th>
+  <th>CD</th>
+  <th>DSTPORT</th>
+  <th>DSTIP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>BYTES</strong></td>
+  <td>1</td>
+  <td>1</td>
+  <td>2</td>
+  <td>4</td>
+</tr>
+<tr>
+  <td><strong>VALUE</strong></td>
+  <td>0 (reply ver)</td>
+  <td>0x5A=ok, 0x5B-0x5D=errors</td>
+  <td>Listen port</td>
+  <td>Listen IP</td>
+</tr>
+</tbody>
+</table>
+
+<p>After that, the data is simply forwarded between the server and the
+client.</p>
+
+<p>As you can probably tell, this is quite limited, despite the weird
+listen feature (well, this was made in a simpler time, when NAT wasn't
+a given, so some protocols relied on the client being able to listen for
+requests). An extension "SOCKS4a" was proposed - by setting the
+destination IP to "0.0.0.x" (where x is non-zero, to distinguish from
+the "unset" IP), you can attach null-terminated domain name after the
+user ID.</p>
+
+<table>
+<thead>
+<tr>
+  <th></th>
+  <th></th>
+  <th>DOMAIN</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>BYTES</strong></td>
+  <td>8+N</td>
+  <td>M</td>
+</tr>
+<tr>
+  <td><strong>VALUE</strong></td>
+  <td>SOCKS4 header with 0.0.0.x addr</td>
+  <td>Null-terminated domain</td>
+</tr>
+</tbody>
+</table>
+
+<p>Still, this is really hacky, and still limited. That's why SOCKS5 was
+introduced - a new version of the protocol.</p>
+
+<h3 id="socks5">SOCKS5</h3>
+
+<p>SOCKS5 has similar semantics to SOCKS4. However, it has native
+authentication support. That's why the very first request from the
+client is the protocol version (5), and the list of "authentication
+methods" supported by the client. There is a lot of methods, but the
+most commonly used ones are "no authentication" (0) and
+"username/password authentication" (2).</p>
+
+<table>
+<thead>
+<tr>
+  <th></th>
+  <th>VER</th>
+  <th>NMETHODS</th>
+  <th>METHODS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>BYTES</strong></td>
+  <td>1</td>
+  <td>1</td>
+  <td>NMETHODS</td>
+</tr>
+<tr>
+  <td><strong>VALUE</strong></td>
+  <td>5</td>
+  <td>Auth method count</td>
+  <td>Auth methods</td>
+</tr>
+</tbody>
+</table>
+
+<p>The server replies with its preferred authentication method out of those
+supported by the client:</p>
+
+<table>
+<thead>
+<tr>
+  <th></th>
+  <th>VER</th>
+  <th>METHOD</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>BYTES</strong></td>
+  <td>1</td>
+  <td>1</td>
+</tr>
+<tr>
+  <td><strong>VALUE</strong></td>
+  <td>5</td>
+  <td>Auth method</td>
+</tr>
+</tbody>
+</table>
+
+<p>In case username/password authentication is required, the client then
+sends an "authentication header", with the auth header version (1), and
+the username and password themselves.</p>
+
+<table>
+<thead>
+<tr>
+  <th></th>
+  <th>VER</th>
+  <th>ULEN</th>
+  <th>UNAME</th>
+  <th>PLEN</th>
+  <th>PASSWD</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>BYTES</strong></td>
+  <td>1</td>
+  <td>1</td>
+  <td>ULEN</td>
+  <td>1</td>
+  <td>PLEN</td>
+</tr>
+<tr>
+  <td><strong>VALUE</strong></td>
+  <td>1</td>
+  <td>User&shy;name length</td>
+  <td>Username</td>
+  <td>Pass&shy;word length</td>
+  <td>Password</td>
+</tr>
+</tbody>
+</table>
+
+<p>Followed by the reply:</p>
+
+<table>
+<thead>
+<tr>
+  <th></th>
+  <th>VER</th>
+  <th>STATUS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>BYTES</strong></td>
+  <td>1</td>
+  <td>1</td>
+</tr>
+<tr>
+  <td><strong>VALUE</strong></td>
+  <td>1</td>
+  <td>Status code (0=success, anything else=error)</td>
+</tr>
+</tbody>
+</table>
+
+<p>Remember, this round-trip is skipped for no-auth requests!</p>
+
+<p>Other authentication methods may be more sophisticated than just
+"username/password". In that case, the SOCKS5 protocol allows encrypting
+or otherwise encapsulating all traffic that follows authentication.</p>
+
+<p>Finally, before explaining the protocol itself, I need to explain how
+socket addresses are encoded in the SOCKS format, so I don't have to
+repeat myself. The first byte is the address type, and then there are
+three options:</p>
+
+<table>
+<thead>
+<tr>
+  <th></th>
+  <th>ATYP</th>
+  <th>IPV4</th>
+  <th>PORT</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>BYTES</strong></td>
+  <td>1</td>
+  <td>4</td>
+  <td>2</td>
+</tr>
+<tr>
+  <td><strong>VALUE</strong></td>
+  <td>1</td>
+  <td>IPv4 address</td>
+  <td>Port</td>
+</tr>
+</tbody>
+</table>
+
+<table>
+<thead>
+<tr>
+  <th></th>
+  <th>ATYP</th>
+  <th>DLEN</th>
+  <th>DOMAIN</th>
+  <th>PORT</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>BYTES</strong></td>
+  <td>1</td>
+  <td>1</td>
+  <td>DLEN</td>
+  <td>2</td>
+</tr>
+<tr>
+  <td><strong>VALUE</strong></td>
+  <td>3</td>
+  <td>Domain length</td>
+  <td>Domain</td>
+  <td>Port</td>
+</tr>
+</tbody>
+</table>
+
+<table>
+<thead>
+<tr>
+  <th></th>
+  <th>ATYP</th>
+  <th>IPV6</th>
+  <th>PORT</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>BYTES</strong></td>
+  <td>1</td>
+  <td>16</td>
+  <td>2</td>
+</tr>
+<tr>
+  <td><strong>VALUE</strong></td>
+  <td>4</td>
+  <td>IPv6 address</td>
+  <td>Port</td>
+</tr>
+</tbody>
+</table>
+
+<p>I like how domain names have the length encoded in the first byte
+instead of being null-terminated - it's much easier to parse than
+SOCKS4. Also, not all proxy servers support domain name resolution,
+so sometimes proxies which support it are labeled "SOCKS5h" - so if you
+want CURL to pass domain names instead of IP addresses, use <code>socks5h://</code>
+schema instead of <code>socks5://</code>.</p>
+
+<p>Now that this is out of the way, the actual protocol is simple. After
+authorization (if it was necessary in the first place), a connection
+request is self. It's pretty similar to SOCKS4, but this time there's
+an additional command - not just TCP connect and TCP bind, but also UDP
+associate! This means you can send DNS and QUIC (HTTP/3) traffic over a
+fully implemented SOCKS proxy.</p>
+
+<table>
+<thead>
+<tr>
+  <th></th>
+  <th>VER</th>
+  <th>CMD</th>
+  <th>RSV</th>
+  <th>DSTADDR</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>BYTES</strong></td>
+  <td>1</td>
+  <td>1</td>
+  <td>1</td>
+  <td>?</td>
+</tr>
+<tr>
+  <td><strong>VALUE</strong></td>
+  <td>5</td>
+  <td>1=connect, 2=bind, 3=udp</td>
+  <td>0</td>
+  <td>Destination address</td>
+</tr>
+</tbody>
+</table>
+
+<p>Then the reply is very similar to SOCKS4:</p>
+
+<table>
+<thead>
+<tr>
+  <th></th>
+  <th>VER</th>
+  <th>STATUS</th>
+  <th>RSV</th>
+  <th>BNDADDR</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>BYTES</strong></td>
+  <td>1</td>
+  <td>1</td>
+  <td>1</td>
+  <td>?</td>
+</tr>
+<tr>
+  <td><strong>VALUE</strong></td>
+  <td>5</td>
+  <td>0=ok, 1-8=errors</td>
+  <td>0</td>
+  <td>Bound address, unused for connect cmd</td>
+</tr>
+</tbody>
+</table>
+
+<p>And then the data gets forwarded.</p>
+
+<p>That's not all - there's also UDP! In case of UDP, the server opens a
+UDP socket and sends its address in BNDADDR. The client is then expected
+to send UDP datagrams to that address. The SOCKS proxy will transmit
+them to the server, and send the server's datagrams back to the client.</p>
+
+<p>But rather than sending plain datagrams, the client must encapsulate
+them as follows:</p>
+
+<table>
+<thead>
+<tr>
+  <th></th>
+  <th>RSV</th>
+  <th>FRAG</th>
+  <th>DSTADDR</th>
+  <th>DATA</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>BYTES</strong></td>
+  <td>2</td>
+  <td>1</td>
+  <td>?</td>
+  <td>The rest of the datagram</td>
+</tr>
+<tr>
+  <td><strong>VALUE</strong></td>
+  <td>0</td>
+  <td>Fragment number</td>
+  <td>Destination address</td>
+  <td>The data itself</td>
+</tr>
+</tbody>
+</table>
+
+<p>Did you notice anything weird? You should! Didn't the client already
+send DSTADDR in the first TCP request? Why does it have to send it
+alongside each datagram? That's because for UDP, the first DSTADDR is
+allowed to be zeroed out, so it's effectively just a suggestion! The
+DSTADDR that actually matters is the one sent in the datagrams.</p>
+
+<p>Another interesting fact is that you lose from 10 to 262 bytes of the
+datagram, so the effective size of the datagram you can send to the
+SOCKS server is lower. In order to be able to send larger datagrams, UDP
+fragmentation is available as an optional SOCKS5 feature (that most
+SOCKS servers don't support... though most SOCKS servers don't support
+UDP at all). if FRAG is non-zero, then the 7 lowest bits of FRAG specify
+the fragment number (it doesn't necessarily start with one, but can't
+overflow in the same sequence - fragment 1 can't follow fragment 127),
+and the highest bit specifies "end-of-fragment-sequence" - that is, end
+of "fragment sequence", not "end of fragment" sequence - this bit being
+set means this is the last datagram out of this sequence.</p>
+
+<p>In turn, the server uses the exact same format for sending datagrams
+back to the client (funnily enough this means the client may have to
+support domain resolution and UDP fragmentation if the server sends such
+packets), but instead of destination address it writes the source
+address in the DSTADDR field.</p>
+
+<p>But there's a problem - when should the server close the UDP socket?
+After all, UDP is a stateless protocol, so unlike TCP where there is a
+clear indication of the stream being closed, in UDP there's no such
+thing.</p>
+
+<p>In this case, the TCP stream where the UDP port association request has
+been sent must be kept opened for as long as the UDP socket needs to
+stay open. When the TCP stream is closed, the server closes all related
+UDP sockets as well.</p>
+
+<p>Evidently, SOCKS5 protocol requires quite a few roundtrips (though with
+a well-behaving server you can just send all the data in advance,
+expecting the server to tell you it's ok or bail out). There is a SOCKS6
+protocol draft that reduces the number of required roundtrips, but it's
+just that - a draft. Additionally, there are some draft extensions for
+SOCKS5 - but, again, they aren't official standards so they aren't
+usually implemented by any clients.</p>
+
+<h2 id="http">HTTP</h2>
+
+<p>HTTP is a weird proxy protocol, because it wasn't designed for this
+purpose, and because the combination of different layers into a single
+protocol is just weird (also, it doesn't support UDP). Well, you will
+see for yourself.</p>
+
+<p>At its core, it's a very simple protocol. Instead of sending the
+following:</p>
+
+<pre><code>GET /index.html HTTP/1.1
+Host: example.org
+Accept: text/html
+</code></pre>
+
+<p>...you send the following:</p>
+
+<pre><code>GET https://example.org/index.html HTTP/1.1
+Host: example.org
+Accept: text/html
+</code></pre>
+
+<p>...or the following:</p>
+
+<pre><code>GET https://example.org/index.html HTTP/1.1
+Accept: text/html
+Proxy-Authorization: Basic &lt;base64-encoded credentials&gt;
+</code></pre>
+
+<p>...and the proxy server simply replies with the origin server's
+response:</p>
+
+<pre><code>HTTP/1.1 200 OK
+Content-Length: 123
+
+...content of index.html
+</code></pre>
+
+<p>It may also be sent over TLS, just like you can send regular HTTP
+requests over TLS (HTTPS) - in that case it's called a HTTPS proxy.</p>
+
+<p>Notice anything weird?</p>
+
+<p>Weird thing number one - "Proxy-Authorization". As you can see, you pass
+the headers intended for the proxy alongside the headers intended for
+the website. There are a number of such headers:</p>
+
+<ul>
+<li>Proxy-Authorization - the same as Authorization, but intended for the
+proxy rather than the website. The most common is <code>Basic &lt;base64
+data&gt;</code>, where <code>&lt;base64 data&gt;</code> is the username and password joined with
+a colon, all encoded with base64 (<code>username:password</code>).</li>
+<li>Proxy-Connection - the same as Connection. I will come back to this
+later, this one is its own can of worms.</li>
+<li>Proxy-Authenticate - this is a response header, the same as
+WWW-Authenticate. A special HTTP status code 407 means "Proxy
+Authentication Required" - in that case, this header is sent alongside
+the response to specify the authentication methods supported by the
+proxy.</li>
+<li>There are no other standard Proxy- headers to my knowledge, but the
+proxy should still drop them before sending the request to the server.</li>
+</ul>
+
+<p>Weird thing number two - notice that little "https://"? Yes -
+http proxies must support encryption! They can't just pass the data
+to the server, they have to encrypt it if the client requests that.
+While this means they can be used to make legacy software compatible
+with modern TLS, it still increases the implementation complexity.</p>
+
+<p>Weird thing number three - look at the Host header. It's there in the
+direct request, it's there in the first proxied request, but it isn't
+there in the second proxied request. That's right - it may or may not be
+sent by the client, but the proxy server is required to ignore it and
+instead use the host specified in the very first line of the header.</p>
+
+<p>Weird thing number four - there is no way to distinguish proxy-generated
+errors from origin-generated errors! If the client gets <code>500 Internal
+Server Error</code>, it may be the origin server's response - or it may be the
+proxy server's response, there's no way to know!</p>
+
+<p>Weird thing number five - no encryption, the proxy may snoop on the
+connection (although sometimes it's desired). This is actually fine
+because of the existence of the HTTP method CONNECT:</p>
+
+<pre><code>CONNECT example.org:443 HTTP/1.1
+Proxy-Authorization: Basic ...
+
+</code></pre>
+
+<p>This method allows you to transmit arbitrary TCP data over HTTP -
+including HTTPS. Many HTTP proxies only allow CONNECT to port 443.</p>
+
+<p>Now, back to Proxy-Connection.</p>
+
+<p>First, what is "Connection"? It specifies whether multiple HTTP requests
+can be sent over a single TCP connection (since TCP and especially TLS
+handshakes have quite a bit of overhead). Something like this, with <code>&gt;</code>
+signifying a request and <code>&lt;</code> signifying a response:</p>
+
+<pre><code>&gt;GET /index.html HTTP/1.1
+&gt;Host: example.org
+&gt;Accept: text/html
+&gt;Connection: keep-alive
+&gt;
+&lt;HTTP/1.1 200 OK
+&lt;Content-Length: 123
+&lt;Connection: keep-alive
+&lt;
+&lt;...content of index.html
+&gt;GET /favicon.ico HTTP/1.1
+&gt;Host: example.org
+&gt;Accept: image/avif,image/webp,*/*
+&gt;Connection: keep-alive
+&gt;
+&lt;HTTP/1.1 200 OK
+&lt;Content-Length: 456
+&lt;Connection: keep-alive
+&lt;
+&lt;...content of favicon.ico
+</code></pre>
+
+<p>Now, how does this apply to proxies? At first you may think - isn't
+sending Connection to the final server in the chain enough? Does the
+proxy really have to support keep-alive connection? Wouldn't something
+like this work?</p>
+
+<pre><code>&gt;GET http://example.org/index.html HTTP/1.1
+&gt;Accept: text/html
+&gt;Connection: keep-alive
+&gt;
+&lt;HTTP/1.1 200 OK
+&lt;Content-Length: 123
+&lt;Connection: keep-alive
+&lt;
+&lt;...content of index.html
+&gt;GET /favicon.ico HTTP/1.1
+&gt;Host: example.org
+&gt;Accept: image/avif,image/webp,*/*
+&gt;Connection: keep-alive
+&gt;
+&lt;HTTP/1.1 200 OK
+&lt;Content-Length: 456
+&lt;Connection: keep-alive
+&lt;
+&lt;...content of favicon.ico
+</code></pre>
+
+<p>And... yeah, this would probably be enough, especially because
+standards-conforming HTTP servers are required to reply to
+<code>http://abc/xyz</code> as well as <code>/xyz</code>.  However, I'm not sure this is what
+actually happens in real life (sorry, I haven't dug that deeply into
+HTTP proxy client implementations - I'm not sure just how little of HTTP
+you can get away with implementing to have a fully compatible HTTP proxy),
+and either way, keep-alive support on the proxy side is a mandatory
+feature - if you don't support it, some clients won't work with your
+proxy!</p>
+
+<p>Let me explain. As you may remember, there's the header
+<code>Proxy-Authorization</code>. If it isn't provided, the proxy may reply with
+status code 407 (authorization required).</p>
+
+<p>That's all fine and good - but... there is a proxy client that just
+refuses to send the credentials to the proxy server. That is - Mozilla
+Firefox (or at least the FoxyProxy extension). I was wondering why it
+did that.</p>
+
+<p>Turns out that even if the proxy server sends 407, it doesn't remember
+that 407. It will only remember to start sending the credentials <em>if the
+proxy keeps the connection alive</em> - even if the proxy says it supports
+HTTP/1.0, but not HTTP/1.1. To visualize it, this is the only way the
+proxy server can force the client to use authorization:</p>
+
+<pre><code>&gt;GET http://example.org/index.html HTTP/1.1
+&gt;Accept: text/html
+&gt;Proxy-Connection: keep-alive
+&gt;
+&lt;HTTP/1.1 407 Proxy Authentication Required
+&lt;Proxy-Authenticate: Basic
+&lt;
+&lt;
+&gt;GET http://example.org/index.html HTTP/1.1
+&gt;Accept: text/html
+&gt;Proxy-Connection: keep-alive
+&gt;Proxy-Authorization: Basic ...
+&gt;
+&lt;HTTP/1.1 200 OK
+&lt;Content-Length: 123
+&lt;Connection: keep-alive
+&lt;
+&lt;...content of index.html
+</code></pre>
+
+<p>(yes, there are three newlines after the 407 header - the first newline
+signifies the end of the Proxy-Authenticate header, the second newline
+signifies the end of the entire HTTP header, and the third newline
+signifies the end of the response payload)</p>
+
+<p>This is such a mess! The whole world of proxies is an underdocumented
+mess.  Hope you enjoyed this semi-article-semi-rant, and hope this
+article may help other people with implementing proxy servers. This is
+just the protocol side of proxies - there are other important and
+challenging aspects in implementing them.</p>
+
+    </div>
+    <hr/>
+    <div class="comments"><details class="comment-box-details">
+<summary><b>Have any comments, questions, feedback? You can click here to leave it, publicly or privately!</b></summary>
+<form method="post" action="/submit_comment">
+<label for="name"><b>Your name?</b> (Leave empty to stay anonymous).</label><br/>
+<input type="text" id="name" name="name"></input><br/>
+<details class="input-footer"><summary>Want pseudo-authentification?</summary>Optional tripcodes are supported: if your nickname contains the <code>#</code> symbol followed by a code (example: <code>AzureDiamond#hunter2</code>), the code will be hashed and appended after your username to ensure some kind of authenticity (example: the previous example will turn into <code>AzureDiamond#3N3HRQJ4</code>); make sure not to reuse your real password as the code (In fact, never reuse passwords at all, not just on this site).</details>
+<label for="pm"><b>Private message to me:</b></label><br/>
+<textarea rows="8" cols="32" id="pm" name="pm"></textarea><br/>
+<div class="input-footer">You can leave it empty, or use it to give me contact details or whatever.</div>
+<label for="comment"><b>Public comment:</b></label><br/>
+<textarea rows="8" cols="32" id="comment" name="comment"></textarea><br/>
+<div class="input-footer">You can leave it empty if you just want to send a private message. Comments are moderated.</div>
+<label for="captcha"><b>What is my email?</b> Hint: it's written on the homepage.</label><br/>
+<input type="text" id="captcha" name="captcha"></input>
+<div class="input-footer">NCAPTCHA - Not Completely Automated Public Turing test to tell Computers and Humans Apart.<br/></div>
+<input type="submit" value="Submit"></input></br>
+</form>
+</details>
+<hr/></div>
+    <footer>
+	    <p>All code on this site is licensed as <a href="https://opensource.org/licenses/0BSD">0BSD</a>, unless stated otherwise. All other content is available under the <a href="https://creativecommons.org/publicdomain/zero/1.0/legalcode">CC0</a> license (Again, unless stated otherwise).</p>
+      <p>The above only applies to my own content. If you see something which is clearly not made by me, like the contents of a screenshot, the license might be different. In other words, you have the permission from me, but not necessarily from other copyright owners if there are any.</p>
+      <noscript><p>Good on you for having JS disabled! That said, my site uses a <a href="/main.js">free script</a> for switching between dark/light modes, so enable JS if you want that! By default it just picks your OS's default.</p></noscript>
+    </footer>
+  </body>
+</html>

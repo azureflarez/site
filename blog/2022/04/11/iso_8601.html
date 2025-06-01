@@ -1,0 +1,120 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="preload" href="/style.css" as="style">
+    <link rel="preload" href="/main.js" as="script">
+    <title>Use ISO-8601 Date Format</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta property="og:site_name" content="pavluk.org Blog"/>
+    <meta property="og:url" content="https://pavluk.org/blog/2022-04-11_iso_8601.html" />
+<meta property="og:title" content="Use ISO-8601 Date Format" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:type" content="article" />
+<meta property="article:author" content="chayleaf" />
+<meta property="article:section" content="Society" />
+<meta property="og:description" content="ISO-8601 is an international datetime format that minimizes ambiguity and maximizes "computer readability"" />
+<meta property="article:tag" content="datetime,date,time,format,standard,iso8601,iso" />
+<meta property="keywords" content="datetime,date,time,format,standard,iso8601,iso" />
+<meta property="article:published_time" content="2022-04-10T17:50:43+00:00" />
+<meta property="article:modified_time" content="2025-06-01T20:29:31+00:00" />
+
+    <link rel="icon" type="image/jpeg" href="/pfp.jpg">
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="https://pavluk.org/blog/feed.xml">
+    <link href="/style.css" rel="stylesheet" />
+    <script src="/main.js"></script>
+  </head>
+  <body onload="documentLoaded()">
+    <div class="main-menu"><ul><li><a href="/">Title Page</a></li><li>Blog</li><li><a href="/about.html">About Me</a></li><li><a href="/links.html">Random Links</a></li></ul><hr/></div>
+    <div class="main-body">
+    <a href="/blog/">&lt; Index</a><br/><h1>Use ISO-8601 Date Format</h1>
+<p>Daily, lots of people have trouble with date formats. Obviously, there's
+the issue of different countries having different formats - like
+dd.mm.yyyy vs mm/dd/yyyy, but that isn't all. Some people only use 2
+digits per date part - good luck deciphering a date like 07.05 or 07/05!
+Is it the day and month, the month and day, the month and year, the year
+and month? You can't tell! Best case you can guess based on surrounding
+context.</p>
+
+<p>Even ignoring the confusion issues, what about file names? If you put a
+date before the filename, and the date is written in one of the two
+common date formats, then sort it alphabetically, the files will be
+sorted in a fairly awkward order, certainly not chronologically.</p>
+
+<p>But how can we solve these issues? Surely, no matter the date format,
+there's a potential to confuse it?</p>
+
+<p>Wrong! It's possible to design a date format that's not confusing,
+while having alphabetic sort be the same as chronological sort, and
+the format is specified in the ISO-8601 standard.</p>
+
+<p>To cut to the chase, the format itself is yyyy-mm-ddThh:mm:ss+-timezone</p>
+
+<p>For example, 2022-04-11T00:29:15+07, the current time as of writing this
+sentence. You could also write the timezone as 07:00 or 0700, and the
+date as 20220411, and the time as 00 or 00:29 or 00:29:15.000 or 002915
+and so on, but the core part stays the same. GMT timezone can be written
+simply as Z (instead of +00 or -00).</p>
+
+<p>The "T" in the middle is fairly controversial, and is there to make it
+easier to figure out something is a time. There could be other ways to
+solve it, such as making the - and : signs mandatory, or just replacing
+T with _ or a space to make it more humanly readable. I'm not asking you
+to religiously follow ISO-8601 to the letter, I'm simply asking you to
+use it to the extent possible to minimize the ambiguousness! As a bonus,
+every mainstream language has ISO-8601 parsing and serialization either
+built in or easily available in a library. Conversely, if a language
+pushes a different time format, you should seriously doubt the
+competency of the developers... just kidding... or am I?</p>
+
+<p>The important part is the format is easier to understand for all kinds
+of people - those who are used to dd.mm.yyyy will be used to the parts
+being ordered by significance, and will naturally assume it's
+yyyy-mm-dd, not yyyy-dd-mm, while those used to mm/dd/yyyy will be used
+to month being written before day, and hence yyyy-mm-dd should come
+naturally to them too. Hopefully nobody will write yy-mm-dd and further
+complicate the matters to those reading ISO-8601 for the first time!</p>
+
+<p>ISO-8601 also has some weirder parts, such as defining how to specify
+week numbers in a year (and people actually use it!), or durations,
+or intervals. For details, refer to the standard itself... or just
+read <a href="https://en.wikipedia.org/wiki/ISO_8601">Wikipedia</a>.</p>
+
+<p>Many countries actually adopted ISO-8601 as their national date format!
+Hence, you can set your datetime locale to a country like Denmark to
+have locale-respecting apps use ISO-8601.</p>
+
+<p>On Linux, this is done by setting <code>LC_TIME</code> to <code>en_DK.UTF-8</code>. For
+example, do this if you use NixOS:</p>
+
+<pre><code>i18n.extraLocaleSettings.LC_TIME = "en_DK.UTF-8";
+</code></pre>
+
+    </div>
+    <hr/>
+    <div class="comments"><details class="comment-box-details">
+<summary><b>Have any comments, questions, feedback? You can click here to leave it, publicly or privately!</b></summary>
+<form method="post" action="/submit_comment">
+<label for="name"><b>Your name?</b> (Leave empty to stay anonymous).</label><br/>
+<input type="text" id="name" name="name"></input><br/>
+<details class="input-footer"><summary>Want pseudo-authentification?</summary>Optional tripcodes are supported: if your nickname contains the <code>#</code> symbol followed by a code (example: <code>AzureDiamond#hunter2</code>), the code will be hashed and appended after your username to ensure some kind of authenticity (example: the previous example will turn into <code>AzureDiamond#3N3HRQJ4</code>); make sure not to reuse your real password as the code (In fact, never reuse passwords at all, not just on this site).</details>
+<label for="pm"><b>Private message to me:</b></label><br/>
+<textarea rows="8" cols="32" id="pm" name="pm"></textarea><br/>
+<div class="input-footer">You can leave it empty, or use it to give me contact details or whatever.</div>
+<label for="comment"><b>Public comment:</b></label><br/>
+<textarea rows="8" cols="32" id="comment" name="comment"></textarea><br/>
+<div class="input-footer">You can leave it empty if you just want to send a private message. Comments are moderated.</div>
+<label for="captcha"><b>What is my email?</b> Hint: it's written on the homepage.</label><br/>
+<input type="text" id="captcha" name="captcha"></input>
+<div class="input-footer">NCAPTCHA - Not Completely Automated Public Turing test to tell Computers and Humans Apart.<br/></div>
+<input type="submit" value="Submit"></input></br>
+</form>
+</details>
+<hr/></div>
+    <footer>
+	    <p>All code on this site is licensed as <a href="https://opensource.org/licenses/0BSD">0BSD</a>, unless stated otherwise. All other content is available under the <a href="https://creativecommons.org/publicdomain/zero/1.0/legalcode">CC0</a> license (Again, unless stated otherwise).</p>
+      <p>The above only applies to my own content. If you see something which is clearly not made by me, like the contents of a screenshot, the license might be different. In other words, you have the permission from me, but not necessarily from other copyright owners if there are any.</p>
+      <noscript><p>Good on you for having JS disabled! That said, my site uses a <a href="/main.js">free script</a> for switching between dark/light modes, so enable JS if you want that! By default it just picks your OS's default.</p></noscript>
+    </footer>
+  </body>
+</html>
