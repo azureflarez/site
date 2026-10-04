@@ -1,16 +1,68 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Azure Flare’s personal website. Profile and projects on GitHub.">
-<title>About me — Azure Flare</title>
-<link rel="stylesheet" href="./style.css?v=6">
-<script src="./main.js?v=6" defer></script>
-</head>
-<body data-page="about">
-<header class="main-menu"><nav aria-label="Main navigation"><ul><li><a data-i18n="home" href="./?v=6">Home</a></li><li><a data-i18n="about" href="./about.html?v=6" aria-current="page">About me</a></li><li><a data-i18n="links" href="./links.html?v=6">Links</a></li></ul></nav><label class="language-control" hidden><span data-i18n="language">Language</span><select id="language-select"><option value="en">English</option><option value="ru">Русский</option><option value="uk">Українська</option></select></label><hr></header>
-<main class="main-body"><section class="hero profile"><img class="profile-avatar" src="https://avatars.githubusercontent.com/u/141839719?v=4" alt="Azure Flare" width="144" height="144"><div class="profile-text"><code class="profile-name">azureflarez</code><p data-i18n="about" class="eyebrow">About me</p><h1>Azure Flare</h1><p data-i18n="bio" class="intro">You can find me on GitHub as azureflarez.</p><p><span data-i18n="bioStart">This is my personal website. My public projects are available on </span><a data-i18n="bioLink" href="https://github.com/azureflarez">my GitHub profile</a>.</p></div></section></main><hr>
-<footer><span>Azure Flare · <a href="https://github.com/azureflarez">GitHub</a></span><button type="button" id="theme-toggle" hidden>Light theme</button></footer>
-</body>
-</html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Azure Flare’s personal website. Profile and projects on GitHub.">
+    <title>About me — Azure Flare</title>
+    <link rel="stylesheet" href="./style.css?v=7">
+    <!-- Translations load before the language and theme controls. -->
+    <script src="./languages/en.js?v=7" defer>
+    </script>
+    <script src="./languages/ru.js?v=7" defer>
+    </script>
+    <script src="./languages/uk.js?v=7" defer>
+    </script>
+    <script src="./main.js?v=7" defer>
+    </script>
+    <script src="./theme.js?v=7" defer>
+    </script>
+  </head>
+  <body data-page="about">
+    <header class="main-menu">
+      <nav aria-label="Main navigation">
+        <ul>
+          <li>
+            <a data-i18n="home" href="./?v=7">Home</a>
+          </li>
+          <li>
+            <a data-i18n="about" href="./about.html?v=7" aria-current="page">About me</a>
+          </li>
+          <li>
+            <a data-i18n="links" href="./links.html?v=7">Links</a>
+          </li>
+        </ul>
+      </nav>
+      <label class="language-control" hidden>
+        <span data-i18n="language">Language</span>
+        <select id="language-select">
+          <option value="en">English</option>
+          <option value="ru">Русский</option>
+          <option value="uk">Українська</option>
+        </select>
+      </label>
+      <hr>
+    </header>
+    <main class="main-body">
+      <section class="hero profile">
+        <img class="profile-avatar" src="https://avatars.githubusercontent.com/u/141839719?v=4" alt="Azure Flare" width="144" height="144">
+        <div class="profile-text">
+          <code class="profile-name">azureflarez</code>
+          <p data-i18n="about" class="eyebrow">About me</p>
+          <h1>Azure Flare</h1>
+          <p data-i18n="bio" class="intro">You can find me on GitHub as azureflarez.</p>
+          <p>
+            <span data-i18n="bioStart">This is my personal website. My public projects are available on </span>
+            <a data-i18n="bioLink" href="https://github.com/azureflarez">my GitHub profile</a>.</p>
+          </div>
+        </section>
+      </main>
+      <hr>
+      <footer>
+        <span>Azure Flare · <a href="https://github.com/azureflarez">GitHub</a>
+        </span>
+        <button type="button" id="theme-toggle" hidden>Light theme</button>
+      </footer>
+    </body>
+  </html>
+  
