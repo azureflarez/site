@@ -1,4 +1,4 @@
 /* Shared styles. Order matters: colors, base rules, compact layout. */
-@import url("./styles/themes.css?v=7");
-@import url("./styles/base.css?v=7");
-@import url("./styles/profile.css?v=7");
+@import url("./styles/themes.css?v=9");
+@import url("./styles/base.css?v=9");
+@import url("./styles/profile.css?v=9");
