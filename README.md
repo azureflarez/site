@@ -41,3 +41,19 @@ After updating files, increment their `?v=` version in HTML and style.css to ref
 ## Publish
 
 Commit to main. GitHub Pages publishes automatically.
+
+## Blog
+
+- `blog/index.html` — list of posts.
+- `blog/_template.html` — editable post template (not a published post).
+- Copy the template to `blog/my-post.html`.
+- Replace the title in both `<title>` and `<h1>`, the date and article paragraphs.
+- Set `<article lang="ru">`, `en` or `uk` to match the article language.
+- Add `<li><a href="./my-post.html">Your title</a></li>` to the post list.
+- Remove the `blogEmpty` paragraph after publishing your first post.
+- Add the post URL to sitemap.xml.
+- Personal article text is not auto-translated. The shared menu still supports three languages.
+- Biography sections are in about.html; their translated texts are in languages/.
+
+## Biography draft
+The biography is an abstract draft requested by the owner, not verified personal facts. Replace its values in the three language files and the English fallback paragraphs in about.html.

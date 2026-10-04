@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Azure Flare’s personal website. Profile and projects on GitHub.">
+    <title>Blog — Azure Flare</title>
+    <link rel="stylesheet" href="../style.css?v=8">
+    <!-- Translations load before the language and theme controls. -->
+    <script src="../languages/en.js?v=8" defer>
+    </script>
+    <script src="../languages/ru.js?v=8" defer>
+    </script>
+    <script src="../languages/uk.js?v=8" defer>
+    </script>
+    <script src="../main.js?v=8" defer>
+    </script>
+    <script src="../theme.js?v=8" defer>
+    </script>
+  </head>
+  <body data-page="blog">
+    <header class="main-menu">
+      <nav aria-label="Main navigation">
+        <ul>
+          <li>
+            <a data-i18n="home" href="../?v=8">Home</a>
+          </li>
+          <li><a data-i18n="blog" href="../blog/?v=8" aria-current="page">Blog</a></li>
+          <li>
+            <a data-i18n="about" href="../about.html?v=8">About me</a>
+          </li>
+          <li>
+            <a data-i18n="links" href="../links.html?v=8">Links</a>
+          </li>
+        </ul>
+      </nav>
+      <label class="language-control" hidden>
+        <span data-i18n="language">Language</span>
+        <select id="language-select">
+          <option value="en">English</option>
+          <option value="ru">Русский</option>
+          <option value="uk">Українська</option>
+        </select>
+      </label>
+      <hr>
+    </header>
+    <main class="main-body">
+      <h1 data-i18n="blog">Blog</h1>
+      <p data-i18n="blogIntro">My notes and articles.</p>
+      <!-- Add a list item here for each published post. -->
+      <ul class="post-list"></ul>
+      <p data-i18n="blogEmpty">No posts published yet.</p>
+    </main>
+    <hr>
+    <footer>
+      <span>Azure Flare · <a href="https://github.com/azureflarez">GitHub</a>
+      </span>
+      <button type="button" id="theme-toggle" hidden>Light theme</button>
+    </footer>
+  </body>
+</html>
+

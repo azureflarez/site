@@ -23,5 +23,15 @@ window.siteTranslations.en = {
   "code": "Website source",
   "repo": "Repository site ↗",
   "light": "Light theme",
-  "dark": "Dark theme"
+  "dark": "Dark theme",
+  "blog": "Blog",
+  "blogIntro": "My notes and articles.",
+  "blogEmpty": "No posts published yet.",
+  "biography": "Biography",
+  "bioHello": "Hello! I’m Azure Flare. Welcome to my personal space on the web.",
+  "bioSite": "I enjoy exploring ideas, learning new things and finding my own way to create. This website is a place for thoughts, experiments and things I want to share.",
+  "projectsHeading": "Projects",
+  "projectsBio": "I prefer to start with a simple idea and develop it step by step. Here I will collect projects, small experiments and notes about what I learn along the way.",
+  "onlineHeading": "Find me online",
+  "onlineBio": "You can find my public profile and projects on GitHub."
 };

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Azure Flare’s personal website. Profile and projects on GitHub.">
+    <title>Your post title — Azure Flare</title>
+    <link rel="stylesheet" href="../style.css?v=8">
+    <!-- Translations load before the language and theme controls. -->
+    <script src="../languages/en.js?v=8" defer>
+    </script>
+    <script src="../languages/ru.js?v=8" defer>
+    </script>
+    <script src="../languages/uk.js?v=8" defer>
+    </script>
+    <script src="../main.js?v=8" defer>
+    </script>
+    <script src="../theme.js?v=8" defer>
+    </script>
+  </head>
+  <body data-page="blog">
+    <header class="main-menu">
+      <nav aria-label="Main navigation">
+        <ul>
+          <li>
+            <a data-i18n="home" href="../?v=8">Home</a>
+          </li>
+          <li><a data-i18n="blog" href="../blog/?v=8" aria-current="page">Blog</a></li>
+          <li>
+            <a data-i18n="about" href="../about.html?v=8">About me</a>
+          </li>
+          <li>
+            <a data-i18n="links" href="../links.html?v=8">Links</a>
+          </li>
+        </ul>
+      </nav>
+      <label class="language-control" hidden>
+        <span data-i18n="language">Language</span>
+        <select id="language-select">
+          <option value="en">English</option>
+          <option value="ru">Русский</option>
+          <option value="uk">Українська</option>
+        </select>
+      </label>
+      <hr>
+    </header>
+    <main class="main-body">
+      <!-- Write your own title, date and text. Do not add data-i18n to personal posts. -->
+      <article lang="en">
+        <h1>Your post title</h1>
+        <p><time datetime="2026-10-04">2026-10-04</time></p>
+        <p>Your first paragraph.</p>
+        <p>Your next paragraph.</p>
+      </article>
+      <p><a data-i18n="blog" href="./?v=8">Blog</a></p>
+    </main>
+    <hr>
+    <footer>
+      <span>Azure Flare · <a href="https://github.com/azureflarez">GitHub</a>
+      </span>
+      <button type="button" id="theme-toggle" hidden>Light theme</button>
+    </footer>
+  </body>
+</html>
+

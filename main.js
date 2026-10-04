@@ -26,7 +26,9 @@
       var text = words[element.dataset.i18n];
       if (typeof text === 'string') element.textContent = text;
     });
-    document.title = words[document.body.dataset.page] + ' — Azure Flare';
+    if (!document.querySelector('article')) {
+      document.title = words[document.body.dataset.page] + ' — Azure Flare';
+    }
     document.querySelector('meta[name="description"]').content = words.description;
     document.querySelector('nav').setAttribute('aria-label', words.nav);
     if (select) select.value = value;
