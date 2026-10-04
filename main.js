@@ -1,32 +1,18 @@
-// SPDX-License-Identifier: 0BSD
-
-function isDarkMode() {
-  return (
-    (localStorage && localStorage.getItem && localStorage.getItem('theme'))
-    ? localStorage.getItem('theme') == 'dark'
-    : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
-  );
-}
-
-function toggleDarkMode() {
-  localStorage.setItem('theme', isDarkMode() ? 'light' : 'dark');
-  updateDarkMode();
-}
-
-function updateDarkMode() {
-  if (isDarkMode()) {
-    document.documentElement.className = document.documentElement.className.replace('light-mode', 'dark-mode');
-  } else {
-    document.documentElement.className = document.documentElement.className.replace('dark-mode', 'light-mode');
-  }
-}
-
-function documentLoaded() {
-  if (document.body.className) document.body.className += ' ';
-  document.documentElement.className += isDarkMode() ? 'dark-mode' : 'light-mode';
-  var btn = document.createElement('button');
-  btn.addEventListener('click', toggleDarkMode, false);
-  btn.className = 'theme-switcher';
-  document.getElementsByTagName('footer')[0].appendChild(btn);
-}
-
+// Theme preference is optional; the site also works without JavaScript.
+(function () {
+  var root = document.documentElement;
+  var saved;
+  try { saved = localStorage.getItem('theme'); } catch (_) {}
+  if (saved === 'light' || saved === 'dark') root.dataset.theme = saved;
+  var button = document.getElementById('theme-toggle');
+  if (!button) return;
+  function isDark() { return root.dataset.theme ? root.dataset.theme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches; }
+  function label() { button.textContent = isDark() ? 'Светлая тема' : 'Тёмная тема'; }
+  button.hidden = false;
+  label();
+  button.addEventListener('click', function () {
+    root.dataset.theme = isDark() ? 'light' : 'dark';
+    try { localStorage.setItem('theme', root.dataset.theme); } catch (_) {}
+    label();
+  });
+})();
