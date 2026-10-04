@@ -1,16 +1,16 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Личный сайт Azure Flare. Профиль и проекты на GitHub.">
-<title>Главная — Azure Flare</title>
-<link rel="stylesheet" href="./style.css?v=2">
-<script src="./main.js?v=2" defer></script>
+<meta name="description" content="Azure Flare’s personal website. Profile and projects on GitHub.">
+<title>Home — Azure Flare</title>
+<link rel="stylesheet" href="./style.css?v=3">
+<script src="./main.js?v=3" defer></script>
 </head>
-<body>
-<header><a class="brand" href="./">Azure Flare</a><nav aria-label="Основная навигация"><a href="./" aria-current="page">Главная</a><a href="./about.html">Обо мне</a><a href="./links.html">Ссылки</a></nav></header>
-<main><section class="hero"><p class="eyebrow">Личный сайт</p><h1>Azure Flare</h1><p class="intro">Добро пожаловать на мой сайт.</p><p>Здесь можно найти мой профиль и проекты на GitHub.</p><a class="primary-link" href="https://github.com/azureflarez">Мой GitHub <span aria-hidden="true">↗</span></a></section><section class="project"><p class="eyebrow">Проект</p><h2>Этот сайт</h2><p>Исходный код сайта доступен в репозитории site.</p><a href="https://github.com/azureflarez/site">Открыть репозиторий →</a></section></main>
-<footer><span>Azure Flare · <a href="https://github.com/azureflarez">GitHub</a></span><button type="button" id="theme-toggle" hidden>Сменить тему</button></footer>
+<body data-page="home">
+<header><a class="brand" href="./">Azure Flare</a><nav aria-label="Main navigation"><a data-i18n="home" href="./" aria-current="page">Home</a><a data-i18n="about" href="./about.html">About me</a><a data-i18n="links" href="./links.html">Links</a></nav><label class="language-control" hidden><span data-i18n="language">Language</span><select id="language-select"><option value="en">English</option><option value="ru">Русский</option><option value="uk">Українська</option></select></label></header>
+<main><section class="hero"><p data-i18n="personal" class="eyebrow">Personal website</p><h1>Azure Flare</h1><p data-i18n="welcome" class="intro">Welcome to my website.</p><p data-i18n="find">You can find my GitHub profile and projects here.</p><a data-i18n="myGithub" class="primary-link" href="https://github.com/azureflarez">My GitHub ↗</a></section><section class="project"><p data-i18n="project" class="eyebrow">Project</p><h2 data-i18n="thisSite">This website</h2><p data-i18n="source">The source code for this website is available in the site repository.</p><a data-i18n="openRepo" href="https://github.com/azureflarez/site">Open repository →</a></section></main>
+<footer><span>Azure Flare · <a href="https://github.com/azureflarez">GitHub</a></span><button type="button" id="theme-toggle" hidden>Light theme</button></footer>
 </body>
 </html>
